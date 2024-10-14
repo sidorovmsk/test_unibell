@@ -1,0 +1,87 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: your-name
+      changes:
+        - createTable:
+            tableName: client
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: contact_type
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: type_name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+        - createTable:
+            tableName: contact
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: client_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contact_value
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_contact_client
+            baseTableName: contact
+            baseColumnNames: client_id
+            referencedTableName: client
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_contact_type
+            baseTableName: contact
+            baseColumnNames: type_id
+            referencedTableName: contact_type
+            referencedColumnNames: id
+
+        - insert:
+            tableName: contact_type
+            columns:
+              - column:
+                  name: type_name
+                  value: EMAIL
+        - insert:
+            tableName: contact_type
+            columns:
+              - column:
+                  name: type_name
+                  value: PHONE
