@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.example.test_unibell.dtos.ContactDTO;
+import org.example.test_unibell.dtos.ContactResponseDTO;
 import org.example.test_unibell.models.Contact;
 import org.example.test_unibell.services.ContactService;
 import org.springframework.http.HttpStatus;
@@ -16,9 +17,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/contacts")
@@ -45,11 +48,20 @@ public class ContactController {
             @ApiResponse(responseCode = "404", description = "Клиент не найден"),
             @ApiResponse(responseCode = "500", description = "Ошибка сервера")
     })
-    @Parameter(name = "clientId", description = "ID клиента", required = true)
+    @Parameters({
+            @Parameter(name = "clientId", description = "ID клиента", required = true),
+            @Parameter(name = "page", description = "Номер страницы"),
+            @Parameter(name = "size", description = "Размер страницы")
+    })
     @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<Contact>> getContactsByClientId(@PathVariable Long clientId) {
-        List<Contact> contacts = contactService.getContactsByClientId(clientId);
-        return ResponseEntity.ok(contacts);
+    public ResponseEntity<List<ContactResponseDTO>> getContactsByClientId(@PathVariable Long clientId,
+                                                                          @RequestParam(defaultValue = "0") int page,
+                                                                          @RequestParam(defaultValue = "10") int size) {
+        List<Contact> contacts = contactService.getContactsByClientId(clientId, page, size);
+        List<ContactResponseDTO> response = contacts.stream()
+                .map(contact -> new ContactResponseDTO(contact.getId(), contact.getType().toString(), contact.getContactValue()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Получить контакты клиента по типу", description = "Возвращает список контактов для клиента по заданному типу контакта и ID клиента.")
@@ -63,8 +75,14 @@ public class ContactController {
             @Parameter(name = "typeName", description = "Тип контакта", required = true)
     })
     @GetMapping("/client/{clientId}/type/{typeName}")
-    public ResponseEntity<List<Contact>> getContactsByClientIdAndType(@PathVariable Long clientId, @PathVariable String typeName) {
-        List<Contact> contacts = contactService.getContactsByClientIdAndType(clientId, typeName);
-        return ResponseEntity.ok(contacts);
+    public ResponseEntity<List<ContactResponseDTO>> getContactsByClientIdAndType(@PathVariable Long clientId,
+                                                                                 @PathVariable String typeName,
+                                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size) {
+        List<Contact> contacts = contactService.getContactsByClientIdAndType(clientId, typeName, page, size);
+        List<ContactResponseDTO> response = contacts.stream()
+                .map(contact -> new ContactResponseDTO(contact.getId(), contact.getType().toString(), contact.getContactValue()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 }

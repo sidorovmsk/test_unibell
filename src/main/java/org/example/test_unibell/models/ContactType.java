@@ -18,4 +18,9 @@ public class ContactType {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private EContactType typeName;
+
+    @Override
+    public String toString() {
+        return typeName.toString();
+    }
 }
